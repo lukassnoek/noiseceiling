@@ -3,13 +3,36 @@ import pandas as pd
 
 
 def get_percentiles(x, n_percentiles=5):
+    """ Utility function to divide a particular variable up into
+    percentiles. """
     return pd.qcut(x, q=n_percentiles, retbins=False, labels=False)
     
 
 def reduce_repeats(X, y, categorical=False, use_index=False):
     """ Removes the repeated trials from the target (y) and
     design matrix (X) by taking the mean (if continuous) or
-    argmax (if categorical) across trial repetitions. """
+    argmax (if categorical) across trial repetitions. 
+    
+    Parameters
+    ----------
+    X : DataFrame
+        A pandas DataFrame with the intended predictors in columns and
+        observations in rows
+    y : Series
+        A pandas Series with the dependent variable
+    categorical : bool
+        Whether the dependent variable (y) is continuous or categorical
+    use_index : bool
+        In determining which trials are repeats, use the index instead of the
+        actual rows (not useful for 99% of the usecases)
+
+    Returns
+    -------
+    X_reduced : DataFrame
+        A pandas DataFrame with the repeats "reduced"
+    y_reduced : Series
+        A pandas Series with the repeats "reduced" 
+    """
 
     X_, y = _check_Xy(X, y, categorical=categorical, use_index=use_index)
     if use_index:
@@ -61,11 +84,17 @@ def _check_Xy(X, y, categorical=False, use_index=False):
         # (crashes when "object")
         y = y.astype(float)
     else:
+        # Need to make sure the Series name is
+        # always the same
         y = y.rename("target")
 
     if not use_index:
+        # Make sure indices align
         y.index = range(y.size)
         X.index = range(X.shape[0])
+    else:
+        # Just checking!
+        assert(y.index.equals(X.index))
 
     return X, y
 
@@ -95,7 +124,24 @@ def _y2opt(y_rep):
 
 
 def _find_repeats(X):
+    """ Finds repeats in DataFrame by checking each unique
+    row against all others.
 
+    Parameters
+    ----------
+    X : DataFrame
+        A pandas DataFrame with predictors in columns and observations
+        ("trials") in rows
+    
+    Returns
+    -------
+    rep_id : np.ndarray
+        A numpy array of size X.shape[0] with indices that indicate
+        which trials are repeats of each other
+    X_uniq : DataFrame
+        A pandas DataFrame from which the repeats are removed (only
+        the first occurence is kept)
+    """
     # Within all repeated trials, get all unique trial configs
     X_uniq = X.drop_duplicates(keep='first')
     rep_id = np.zeros(X.shape[0])  # store indices
@@ -111,17 +157,3 @@ def _find_repeats(X):
         raise ValueError("Something went wrong in determining repeats ...")
 
     return rep_id, X_uniq
-
-
-if __name__ == '__main__':
-    import pandas as pd
-    df = pd.read_csv('noiseceiling/data/sub-01_task-expressive_ratings.tsv', sep='\t', index_col=0)
-    df = df.query("rating_type == 'emotion'").query("rating != 'Geen van allen'")
-    y = df['rating']
-    #y = df.query("rating_type == 'arousal'")['rating'].astype(float)
-    
-    X = pd.read_csv('noiseceiling/data/featurespace-AU.tsv', sep='\t', index_col=0)
-    X = X.loc[y.index, :]
-
-    reduce_repeats(X, y, categorical=True, use_index=True)
-    #reduce_repeats(X, y, categorical=False, use_index=False)

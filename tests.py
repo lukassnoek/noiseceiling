@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import os.path as op
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, recall_score
 from noiseceiling import compute_nc_classification, compute_nc_regression
 from noiseceiling import reduce_repeats
 
@@ -25,11 +25,12 @@ def _load_data(classification=True):
 
 @pytest.mark.parametrize("use_index", [False, True])
 @pytest.mark.parametrize("use_repeats_only", [False, True])
-def test_nc_classification(use_index, use_repeats_only):    
+@pytest.mark.parametrize("per_class", [False, True])
+def test_nc_classification(use_index, use_repeats_only, per_class):
 
     X, y = _load_data(classification=True)    
     nc = compute_nc_classification(
-        X, y, use_repeats_only=use_repeats_only, soft=True, per_class=True,
+        X, y, use_repeats_only=use_repeats_only, soft=True, per_class=per_class,
         use_index=use_index, score_func=roc_auc_score
     )
 
