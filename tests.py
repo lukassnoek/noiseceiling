@@ -1,0 +1,53 @@
+import pytest
+import pandas as pd
+import os.path as op
+from sklearn.metrics import roc_auc_score
+from noiseceiling import compute_nc_classification, compute_nc_regression
+from noiseceiling import reduce_repeats
+
+
+def _load_data(classification=True):
+
+    f = op.join('noiseceiling', 'data', 'sub-xx_task-expressive_ratings.csv')
+    y = pd.read_csv(f, index_col=0)
+    f = op.join('noiseceiling', 'data', 'featurespace-AU.tsv')
+    X = pd.read_csv(f, sep='\t', index_col=0)
+    
+    if classification:
+        y = y.query("rating_type == 'emotion'").query("rating != 'Geen van allen'")
+        y = y['rating']
+    else:
+        y = y.query("rating_type == 'arousal'")['rating']
+
+    X = X.loc[y.index, :]
+    return X, y
+
+
+@pytest.mark.parametrize("use_index", [False, True])
+@pytest.mark.parametrize("use_repeats_only", [False, True])
+def test_nc_classification(use_index, use_repeats_only):    
+
+    X, y = _load_data(classification=True)    
+    nc = compute_nc_classification(
+        X, y, use_repeats_only=use_repeats_only, soft=True, per_class=True,
+        use_index=use_index, score_func=roc_auc_score
+    )
+
+
+@pytest.mark.parametrize("use_index", [False, True])
+@pytest.mark.parametrize("use_repeats_only", [False, True])
+def test_nc_regression(use_index, use_repeats_only):
+
+    X, y = _load_data(classification=False)
+    nc = compute_nc_regression(
+        X, y, use_repeats_only=use_repeats_only,
+        use_index=use_repeats_only
+    )
+
+
+@pytest.mark.parametrize("use_index", [False, True])
+@pytest.mark.parametrize("classification", [False, True])
+def test_reduce_repeats(use_index, classification):
+
+    X, y = _load_data(classification=classification)
+    reduce_repeats(X, y, categorical=classification, use_index=use_index)

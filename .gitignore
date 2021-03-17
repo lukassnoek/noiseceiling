@@ -132,3 +132,4 @@ dmypy.json
 noiseceiling/data
 noise_ceiling.py
 compute_noise_ceiling.py
+**/.DS_Store
