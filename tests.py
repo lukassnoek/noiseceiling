@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import pandas as pd
 import os.path as op
 from sklearn.metrics import roc_auc_score, recall_score
@@ -52,3 +53,17 @@ def test_reduce_repeats(use_index, classification):
 
     X, y = _load_data(classification=classification)
     reduce_repeats(X, y, categorical=classification, use_index=use_index)
+
+
+"""
+@pytest.mark.parametrize("classification", [False, True])
+def test_no_repeats(classification):
+    
+    X = pd.DataFrame(np.random.normal(0, 1, size=(100, 5)))
+    if classification:
+        y = pd.Series(np.random.choice(['a', 'b', 'c'], size=100))
+        nc = compute_nc_classification(X, y)
+    else:
+        y = pd.Series(np.random.normal(0, 1, 100))
+        nc = compute_nc_regression(X, y)
+"""
