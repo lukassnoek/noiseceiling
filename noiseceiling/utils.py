@@ -86,6 +86,7 @@ def _check_Xy(X, y, categorical=False, use_index=False):
     else:
         # Need to make sure the Series name is
         # always the same
+        y = y.astype("category")
         y = y.rename("target")
 
     if not use_index:
