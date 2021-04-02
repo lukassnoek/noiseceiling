@@ -97,6 +97,14 @@ def _check_Xy(X, y, categorical=False, use_index=False):
         # Just checking!
         assert(y.index.equals(X.index))
 
+    if X.duplicated().sum() == 0:
+        raise ValueError("There are no repeats in your data.")
+    else:
+        if categorical:
+            for cat in y.unique():
+                if X.loc[y == cat, :].duplicated().sum() == 0:
+                    raise ValueError(f"There are no repeats for class {cat}!")
+
     return X, y
 
 
