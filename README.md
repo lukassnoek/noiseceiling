@@ -13,3 +13,5 @@ Note that both functions expect two (mandatory) arguments:
 
 * `X`: a *pandas* `DataFrame` with predictors/features in columns and observations in rows;
 * `y`: a *pandas* `Series` with observations in rows
+
+In addition, you can estimate the variability of the noise ceiling using the `run_bootstraps_nc` function, which accepts an addition keyword, `classification` (a bool), which indicates whether a categorical (`True`) or continuous (`False`) noise ceiling should be estimated.
