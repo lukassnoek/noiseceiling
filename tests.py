@@ -5,6 +5,7 @@ import os.path as op
 from sklearn.metrics import roc_auc_score, recall_score
 from noiseceiling import compute_nc_classification, compute_nc_regression
 from noiseceiling import reduce_repeats
+from noiseceiling.bootstrap import run_bootstraps_nc
 
 
 def _load_data(classification=True):
@@ -24,6 +25,28 @@ def _load_data(classification=True):
     return X, y
 
 
+@pytest.mark.parametrize("classification", [False, True])
+def test_no_repeats(classification):
+    """ Should raise a ValueError. """
+    X = pd.DataFrame(np.random.normal(0, 1, size=(100, 5)))
+    if classification:
+        y = pd.Series(np.random.choice(['a', 'b', 'c'], size=100))
+        with pytest.raises(ValueError):
+            compute_nc_classification(X, y)
+    else:
+        y = pd.Series(np.random.normal(0, 1, 100))
+        with pytest.raises(ValueError):
+            compute_nc_regression(X, y)
+
+
+@pytest.mark.parametrize("classification", [False, True])
+def test_bootstrap_nc(classification):
+    """ Should raise a ValueError. """
+    
+    X, y = _load_data(classification=classification)
+    run_bootstraps_nc(X, y, classification=classification)
+
+
 @pytest.mark.parametrize("use_index", [False, True])
 @pytest.mark.parametrize("use_repeats_only", [False, True])
 @pytest.mark.parametrize("per_class", [False, True])
@@ -31,7 +54,7 @@ def test_nc_classification(use_index, use_repeats_only, per_class):
 
     X, y = _load_data(classification=True)
     
-    nc = compute_nc_classification(
+    compute_nc_classification(
         X, y, use_repeats_only=use_repeats_only, soft=True, per_class=per_class,
         use_index=use_index, score_func=roc_auc_score
     )
@@ -55,7 +78,7 @@ def test_nc_classification_ytype(y_type, per_class):
 def test_nc_regression(use_index, use_repeats_only):
 
     X, y = _load_data(classification=False)
-    nc = compute_nc_regression(
+    compute_nc_regression(
         X, y, use_repeats_only=use_repeats_only,
         use_index=use_repeats_only
     )
@@ -67,17 +90,3 @@ def test_reduce_repeats(use_index, classification):
 
     X, y = _load_data(classification=classification)
     reduce_repeats(X, y, categorical=classification, use_index=use_index)
-
-
-"""
-@pytest.mark.parametrize("classification", [False, True])
-def test_no_repeats(classification):
-    
-    X = pd.DataFrame(np.random.normal(0, 1, size=(100, 5)))
-    if classification:
-        y = pd.Series(np.random.choice(['a', 'b', 'c'], size=100))
-        nc = compute_nc_classification(X, y)
-    else:
-        y = pd.Series(np.random.normal(0, 1, 100))
-        nc = compute_nc_regression(X, y)
-"""
