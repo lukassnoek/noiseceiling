@@ -5,7 +5,7 @@ from .utils import _find_repeats, _check_Xy, _use_index, _y2opt
 
 
 def compute_nc_classification(X, y, use_repeats_only=True, soft=True, per_class=True,
-                              use_index=False, score_func=roc_auc_score):
+                              use_index=False, score_func=roc_auc_score, progress_bar=False):
     """ Computes a noise ceiling for classification models (i.e., when
     the dependent variable is categorical).
 
@@ -31,6 +31,8 @@ def compute_nc_classification(X, y, use_repeats_only=True, soft=True, per_class=
     score_func : function
         Scikit-learn style function that computes the performance of the 
         optimal model, i.e., the noise ceiling
+    progress_bar : bool
+        Whether to show a progress bar when finding repeats
 
     Returns
     -------
@@ -50,7 +52,7 @@ def compute_nc_classification(X, y, use_repeats_only=True, soft=True, per_class=
         X_, X, y = X_.loc[rep_idx, :], X.loc[rep_idx, :], y.loc[rep_idx]
 
     # Find repeated trials (keep all!)
-    rep_id, _ = _find_repeats(X_)
+    rep_id, _ = _find_repeats(X_, progress_bar=progress_bar)
 
     # Add repetition ID to y so we can use groupby
     y = y.to_frame().assign(rep_id=rep_id)
@@ -81,7 +83,8 @@ def compute_nc_classification(X, y, use_repeats_only=True, soft=True, per_class=
     return nc
 
 
-def compute_nc_regression(X, y, use_repeats_only=True, use_index=False):
+def compute_nc_regression(X, y, use_repeats_only=True, use_index=False,
+                          progress_bar=False):
     """ Computes a noise ceiling for regression models (i.e., when
     the dependent variable is continuous). Note that the noise ceiling
     is always expressed as an R2 score (i.e., explained variance).
@@ -99,6 +102,8 @@ def compute_nc_regression(X, y, use_repeats_only=True, use_index=False):
     use_index : bool
         In determining which trials are repeats, use the index instead of the
         actual rows (not useful for 99% of the usecases)
+    progress_bar : bool
+        Whether to show a progress bar when finding repeats
 
     Returns
     -------
@@ -116,7 +121,7 @@ def compute_nc_regression(X, y, use_repeats_only=True, use_index=False):
         rep_idx = X_.duplicated(keep=False).to_numpy()
         X_, X, y = X_.loc[rep_idx, :], X.loc[rep_idx, :], y.loc[rep_idx]
 
-    rep_id, _ = _find_repeats(X_)
+    rep_id, _ = _find_repeats(X_, progress_bar=progress_bar)
     y = y.to_frame().assign(rep_id=rep_id)
     
     # Compute total sums of squares (TSS) and residual sums of squares (RSS)

@@ -4,6 +4,7 @@ from tqdm import tqdm
 from .core import compute_nc_classification, compute_nc_regression
 from .utils import _find_repeats
 
+
 def run_bootstraps_nc(X, y, n_bootstraps=10, classification=True, kwargs=None):
     """ Runs a number of bootstraps to estimate the variability of the noise ceiling.
 
@@ -30,10 +31,17 @@ def run_bootstraps_nc(X, y, n_bootstraps=10, classification=True, kwargs=None):
     if kwargs is None:
         kwargs = {}
     
+    if 'progress_bar' in kwargs.keys():
+        pb = kwargs['progress_bar']
+    else:
+        pb = False
+
+    rep_idx, _ = _find_repeats(X, progress_bar=pb)
+    n_uniq = np.unique(rep_idx).size
+        
     ncs = []
     for _ in tqdm(range(n_bootstraps)):
-        rep_idx, _ = _find_repeats(X)
-        n_uniq = np.unique(rep_idx).size
+
         samp_idx = np.random.choice(np.unique(rep_idx), size=n_uniq, replace=True)
         X_, y_ = [], []
         for s in samp_idx:
@@ -42,6 +50,7 @@ def run_bootstraps_nc(X, y, n_bootstraps=10, classification=True, kwargs=None):
 
         X_ = pd.concat(X_, axis=0)
         y_ = pd.concat(y_)
+
         if classification:
             nc = compute_nc_classification(X_, y_, **kwargs)
         else:

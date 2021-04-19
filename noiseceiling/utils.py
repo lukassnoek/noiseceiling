@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 
 def get_percentiles(x, n_percentiles=5):
@@ -132,7 +133,7 @@ def _y2opt(y_rep):
     return opt
 
 
-def _find_repeats(X):
+def _find_repeats(X, progress_bar=False):
     """ Finds repeats in DataFrame by checking each unique
     row against all others.
 
@@ -156,7 +157,11 @@ def _find_repeats(X):
     rep_id = np.zeros(X.shape[0])  # store indices
 
     # Loop over unique rows to see which match other rows!
-    for i in range(X_uniq.shape[0]):
+    to_iter = range(X_uniq.shape[0])
+    if progress_bar:
+        to_iter = tqdm(to_iter)
+
+    for i in to_iter:
         # ALL columns should match
         idx = (X_uniq.iloc[i, :] == X).all(axis=1).to_numpy()
         rep_id[idx] = i + 1  # each repeated trial gets a "repetition ID"
