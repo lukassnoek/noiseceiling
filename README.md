@@ -15,3 +15,6 @@ Note that both functions expect two (mandatory) arguments:
 * `y`: a *pandas* `Series` with observations in rows
 
 In addition, you can estimate the variability of the noise ceiling using the `run_bootstraps_nc` function, which accepts an addition keyword, `classification` (a bool), which indicates whether a categorical (`True`) or continuous (`False`) noise ceiling should be estimated.
+
+## Notes
+Although the functions from this package work for any column type in `X` (integer, float, string), the noise ceiling functions are about an order of magnitude faster when all columns are of a numeric type (i.e., no strings). Therefore, I'd recommend encoding string-based values (e.g., category levels) as integers.
