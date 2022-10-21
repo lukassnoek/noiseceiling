@@ -1,4 +1,7 @@
 # noiseceiling
+
+[![DOI](https://zenodo.org/badge/348092689.svg)](https://zenodo.org/badge/latestdoi/348092689)
+
 Noise ceiling estimation for machine learning models.
 
 ## What does it do?
